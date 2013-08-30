@@ -13,6 +13,6 @@ Install
 
 Run
 ---
-* java -Dunlocker.handlepath="<path to handle.exe>" -jar "<path>"
+* java -Dunlocker.handlepath="&tl;path to handle.exe&gt;" -jar "&lt;path&gt;"
 * e.g. java -Dunlocker.handlepath="C:\Progam Files\sysinternals\handle.exe" -jar "C:\Users\someuser\somedirectory"
 
