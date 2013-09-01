@@ -23,13 +23,13 @@ import eu.sn7.unlocker.util.ListUtil;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UnlockerTest {
+	private final int NUMBER_OF_TRIES = 5;
+
 	@Mock
 	ExecCommand processFinderCommand;
 
 	@Mock
 	ProcessKiller processKiller;
-
-	private int numberOfRetries;
 
 	private Unlocker unlocker;
 
@@ -37,23 +37,20 @@ public class UnlockerTest {
 	public void setUp() {
 		HandleCommandPidParser processIdParser = new HandleCommandPidParser();
 		ProcessFinder processListFinder = new LockingProcessFinder(processFinderCommand, processIdParser);
-		numberOfRetries = 5;
-		unlocker = new Unlocker(processListFinder, processKiller, numberOfRetries);
+		unlocker = new Unlocker(processListFinder, processKiller, NUMBER_OF_TRIES);
 	}
 
 	@Test
 	public void testUnlockerLoop() throws Exception {
-		when(processFinderCommand.getOutputLines())
-				.thenReturn(
-						ListUtil.create(
-								"cmd.exe            pid: 248    type: File            74: C:\\Dokumente und Einstellungen\\user\\Desktop\\somedir",
-								"java.exe            pid: 2493    type: File            74: C:\\Dokumente und Einstellungen\\user\\Desktop\\somedir",
-								"java.exe            pid: 2493    type: File            74: C:\\Dokumente und Einstellungen\\user\\Desktop\\somedir\\file.jar"));
+		String line1 = "cmd.exe            pid: 248    type: File            74: C:\\Dokumente und Einstellungen\\user\\Desktop\\somedir";
+		String line2 = "java.exe            pid: 2493    type: File            74: C:\\Dokumente und Einstellungen\\user\\Desktop\\somedir";
+		String line3 = "java.exe            pid: 2493    type: File            74: C:\\Dokumente und Einstellungen\\user\\Desktop\\somedir\\file.jar";
+		when(processFinderCommand.getOutputLines()).thenReturn(ListUtil.create(line1, line2, line3));
 
 		unlocker.unlock();
 
 		int numberOfDifferentPids = 2;
-		verify(processKiller, times(numberOfRetries * numberOfDifferentPids)).killProcess(any(String.class));
+		verify(processKiller, times(NUMBER_OF_TRIES * numberOfDifferentPids)).killProcess(any(String.class));
 	}
 
 	@Test
