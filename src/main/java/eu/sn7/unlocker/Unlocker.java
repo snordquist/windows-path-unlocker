@@ -1,41 +1,31 @@
 package eu.sn7.unlocker;
 
-import java.io.File;
+import eu.sn7.unlocker.process.ProcessFinder;
+import eu.sn7.unlocker.process.ProcessKiller;
 
 public class Unlocker {
-	private static final String HANDLE_CMD_PATH_PROPERTY = "unlocker.handlepath";
-	private static final String DEFAULT_HANDLE_COMMAND_PATH = "handle";
-	public static final String HANDLE_CMD_PATH = getHandleCommandPath();
+	private ProcessFinder processListFinder;
+	private ProcessKiller processKiller;
+	private int numberOfTries;
 
-	private File path;
-
-	public Unlocker(File path) {
-		this.path = path;
+	public Unlocker(ProcessFinder processListFinder, ProcessKiller processKiller, int numberOfTries) {
+		this.processListFinder = processListFinder;
+		this.processKiller = processKiller;
+		this.numberOfTries = numberOfTries;
 	}
 
 	public void unlock() {
-		UnlockProcess unlockProcess = new UnlockProcess(path);
+		UnlockProcess unlockProcess = new UnlockProcess(processListFinder, processKiller);
 		unlockProcess.unlock();
+
+		numberOfTries--;
 
 		retryUnlockIfNecessary(unlockProcess);
 	}
 
 	private void retryUnlockIfNecessary(UnlockProcess unlockProcess) {
-		if (unlockProcess.hasKilledProcesses()) {
+		if (unlockProcess.hasKilledProcesses() && numberOfTries > 0) {
 			unlock();
 		}
 	}
-
-	private static String getHandleCommandPath() {
-		String pathFromProperty = System.getProperty(HANDLE_CMD_PATH_PROPERTY);
-		if (pathFromProperty == null) {
-			return DEFAULT_HANDLE_COMMAND_PATH;
-		}
-		return pathFromProperty;
-	}
-
-	public static void log(String string) {
-		System.out.println(string);
-	}
-
 }
